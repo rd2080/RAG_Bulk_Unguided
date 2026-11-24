@@ -39,6 +39,23 @@ docker compose exec app python -m app.ingest sources.txt
 
 5. Open http://localhost:8000 and ask a question.
 
+## Status
+
+Checked on the `main` branch:
+
+- Unit tests: 6 pass (`pytest`).
+- Ingest against Neon (pgvector): 18 chunks stored from the three approved sources.
+- Chat: "How do I build muscle on a bulk?" returns an answer with source links.
+- Chat: "How do I cut fat fast?" returns an answer framed toward bulking, with a note on when cutting does not fit.
+- Chat: a steroid question gets a refusal that suggests a doctor.
+- Docker: the app container starts and reaches Ollama on the host.
+
+## Neon setup
+
+1. Create a Neon project and copy its connection string.
+2. Put it in `.env` as `DATABASE_URL`. Keep `?sslmode=require` at the end.
+3. The ingest script creates the `vector` extension and the `chunks` table. You don't need to do it by hand. Run ingest before asking questions.
+
 ## Tests
 
 ```bash
