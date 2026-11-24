@@ -1,0 +1,6 @@
+# Approved public sources (one URL per line). Lines starting with # are ignored.
+# Chosen by me because you skipped the source question. Review before ingest.
+# Wikipedia and Harvard Nutrition Source block the plain Python client (403), so they are not used.
+https://medlineplus.gov/ency/article/002222.htm
+https://medlineplus.gov/ency/article/002471.htm
+https://www.cdc.gov/physical-activity-basics/guidelines/adults.html

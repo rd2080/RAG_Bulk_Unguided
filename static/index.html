@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bulking Coach</title>
+  <style>
+    :root { --bg: #f7f7f5; --fg: #1d1d1b; --card: #ffffff; --accent: #2f6f4e; --muted: #6b6b66; }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) { --bg: #161715; --fg: #ecece8; --card: #1f201d; --accent: #6fc597; --muted: #9a9a93; }
+    }
+    :root[data-theme="dark"] { --bg: #161715; --fg: #ecece8; --card: #1f201d; --accent: #6fc597; --muted: #9a9a93; }
+    body { margin: 0; background: var(--bg); color: var(--fg); font-family: system-ui, sans-serif; }
+    main { max-width: 720px; margin: 0 auto; padding: 16px; }
+    h1 { font-size: 1.4rem; color: var(--accent); }
+    #log { min-height: 200px; }
+    .msg { background: var(--card); border-radius: 10px; padding: 12px; margin: 10px 0; white-space: pre-wrap; }
+    .user { border-left: 4px solid var(--accent); }
+    .sources { font-size: 0.85rem; color: var(--muted); margin-top: 8px; }
+    .sources a { color: var(--accent); word-break: break-all; }
+    form { display: flex; gap: 8px; position: sticky; bottom: 0; background: var(--bg); padding: 8px 0; }
+    input { flex: 1; padding: 10px; font-size: 1rem; border-radius: 8px; border: 1px solid var(--muted); background: var(--card); color: var(--fg); }
+    button { padding: 10px 16px; border: 0; border-radius: 8px; background: var(--accent); color: #fff; font-size: 1rem; }
+    button:disabled { opacity: 0.5; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Bulking Coach</h1>
+  <p class="sources">Answers come from approved public sources, and each answer lists its links.</p>
+  <div id="log" aria-live="polite"></div>
+  <form id="ask">
+    <input id="q" type="text" placeholder="Ask about bulking, surplus, protein, training…" autocomplete="off" required>
+    <button id="send" type="submit">Ask</button>
+  </form>
+</main>
+<script>
+  const log = document.getElementById("log");
+  const form = document.getElementById("ask");
+  const input = document.getElementById("q");
+  const send = document.getElementById("send");
+
+  function addMessage(text, cls, sources) {
+    const div = document.createElement("div");
+    div.className = "msg " + cls;
+    div.textContent = text;
+    if (sources && sources.length) {
+      const s = document.createElement("div");
+      s.className = "sources";
+      s.append("Sources: ");
+      sources.forEach((url, i) => {
+        const a = document.createElement("a");
+        a.href = url;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        a.textContent = url;
+        s.append(a);
+        if (i < sources.length - 1) s.append(" · ");
+      });
+      div.append(s);
+    }
+    log.append(div);
+    div.scrollIntoView({ behavior: "smooth", block: "end" });
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const question = input.value.trim();
+    if (!question) return;
+    addMessage(question, "user");
+    input.value = "";
+    send.disabled = true;
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question }),
+      });
+      if (!res.ok) throw new Error("Server error " + res.status);
+      const data = await res.json();
+      addMessage(data.answer, "", data.sources);
+    } catch (err) {
+      addMessage("Something went wrong: " + err.message, "");
+    } finally {
+      send.disabled = false;
+      input.focus();
+    }
+  });
+</script>
+</body>
+</html>
